@@ -3,13 +3,15 @@
  * One-shot script: find duplicate "Warehouse Slip Incident" docs, keep the one
  * with real Attempt records, set caseId:"case001" on it, delete the other.
  */
-require("dotenv").config();
+const { getRuntimeOptions } = require("./config");
 const mongoose = require("mongoose");
 const Incident = require("./models/Incident");
 const Attempt  = require("./models/Attempt");
 
 async function run() {
-  await mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/safety_detective");
+  const { mongoUri } = getRuntimeOptions();
+  if (!mongoUri) throw new Error("MONGO_URI is required");
+  await mongoose.connect(mongoUri);
   console.log("Connected");
 
   const docs = await Incident.find({ title: "Warehouse Slip Incident" }).lean();

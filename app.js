@@ -3,13 +3,14 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
+const { getRuntimeOptions } = require('./config');
 
 function createApp({ dist = path.join(__dirname, '../frontend/dist') } = {}) {
+  const { corsOrigins, serveFrontend } = getRuntimeOptions();
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
-  const origins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map(s => s.trim());
-  app.use(cors({ origin: origins }));
+  app.use(cors({ origin: corsOrigins }));
   app.use(express.json({ limit: '32kb' }));
   app.get('/api/health', (req, res) => {
     const ready = mongoose.connection.readyState === 1;
@@ -25,7 +26,7 @@ function createApp({ dist = path.join(__dirname, '../frontend/dist') } = {}) {
   app.use('/api/admin', require('./routes/admin'));
   app.use('/api', (req, res) => res.status(404).json({ error: 'API endpoint not found' }));
 
-  if (process.env.SERVE_FRONTEND !== 'false' && fs.existsSync(path.join(dist, 'index.html'))) {
+  if (serveFrontend && fs.existsSync(path.join(dist, 'index.html'))) {
     app.use(express.static(dist));
     // Missing assets must return 404 rather than an HTML document.
     app.use('/assets', (req, res) => res.sendStatus(404));

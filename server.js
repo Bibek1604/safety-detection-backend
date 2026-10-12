@@ -8,7 +8,7 @@ async function start() {
   const fs = require('fs');
   const path = require('path');
   if (config.production && config.serveFrontend && !fs.existsSync(path.join(__dirname, '../frontend/dist/index.html'))) {
-    throw new Error('Frontend build missing. Run npm run build from the repository root.');
+    throw new Error('Frontend build missing. Set SERVE_FRONTEND=false for a standalone backend, or build frontend/ first.');
   }
   await mongoose.connect(config.mongoUri, { serverSelectionTimeoutMS: 15000 });
   console.log('MongoDB connected');
